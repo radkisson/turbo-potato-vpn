@@ -1,0 +1,6 @@
+# Example environment file - copy to .env and configure
+TZ=UTC
+OPENAI_API_BASE=https://your-azure-openai-endpoint.openai.azure.com/
+OPENAI_API_KEY=your-azure-openai-api-key
+DEFAULT_MODEL=gpt-4o
+GRAFANA_PASSWORD=your-secure-password

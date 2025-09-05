@@ -1,0 +1,84 @@
+---
+- name: Setup Tailscale Hub
+  hosts: all
+  become: true
+  vars_files:
+    - ../vars/main.yml
+  
+  tasks:
+    - name: Include common role
+      include_role:
+        name: common
+
+    - name: Include docker role
+      include_role:
+        name: docker
+
+    - name: Include tailscale role
+      include_role:
+        name: tailscale
+
+    - name: Include security role
+      include_role:
+        name: security
+
+    - name: Include monitoring role
+      include_role:
+        name: monitoring
+
+    - name: Format and mount data disk
+      include_tasks: ../tasks/mount_data_disk.yml
+
+    - name: Create project directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ project_dir }}"
+        - "{{ project_dir }}/unbound"
+        - "{{ project_dir }}/adguard/work"
+        - "{{ project_dir }}/adguard/conf"
+        - "{{ project_dir }}/openwebui"
+        - "{{ project_dir }}/prometheus"
+        - "{{ project_dir }}/grafana/provisioning/datasources"
+        - "{{ project_dir }}/grafana/provisioning/dashboards"
+        - "{{ project_dir }}/loki"
+        - "{{ project_dir }}/promtail"
+
+    - name: Copy configuration files
+      copy:
+        src: "../../configs/{{ item.src }}"
+        dest: "{{ project_dir }}/{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: "unbound/unbound.conf", dest: "unbound/unbound.conf" }
+        - { src: "docker/docker-compose.yml", dest: "docker-compose.yml" }
+        - { src: "prometheus/prometheus.yml", dest: "prometheus/prometheus.yml" }
+        - { src: "loki/loki-config.yaml", dest: "loki/loki-config.yaml" }
+        - { src: "promtail/promtail-config.yaml", dest: "promtail/promtail-config.yaml" }
+        - { src: "grafana/datasources/all.yaml", dest: "grafana/provisioning/datasources/all.yaml" }
+        - { src: "grafana/dashboards/dashboard.yaml", dest: "grafana/provisioning/dashboards/dashboard.yaml" }
+        - { src: "grafana/dashboards/system_metrics.json", dest: "grafana/provisioning/dashboards/system_metrics.json" }
+
+    - name: Configure environment file
+      template:
+        src: ../templates/env.j2
+        dest: "{{ project_dir }}/.env"
+        mode: '0600'
+
+    - name: Start services
+      shell: docker compose up -d
+      args:
+        chdir: "{{ project_dir }}"
+      environment:
+        COMPOSE_HTTP_TIMEOUT: 180
+
+    - name: Configure Tailscale as exit node and subnet router
+      shell: tailscale up --advertise-exit-node --advertise-routes=10.0.0.0/16 --ssh --authkey={{ tailscale_auth_key }}
+      args:
+        creates: "/var/lib/tailscale/tailscaled.state"
+
+    - name: Setup Restic backups
+      include_role:
+        name: restic

@@ -1,0 +1,16 @@
+# Example Terraform variables file
+# Copy this to terraform.tfvars and fill in your values
+
+environment = "prod"
+location = "canadacentral"
+vm_size = "Standard_B2als_v2"
+admin_username = "adminuser"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+data_disk_size_gb = 64
+
+# Get this from Tailscale admin console
+tailscale_auth_key = "tskey-auth-xxxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Azure OpenAI configuration
+openai_api_key = "your-azure-openai-api-key"
+openai_api_base = "https://your-resource-name.openai.azure.com/"

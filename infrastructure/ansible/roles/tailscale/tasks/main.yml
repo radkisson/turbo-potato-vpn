@@ -1,0 +1,19 @@
+---
+- name: Download Tailscale installation script
+  get_url:
+    url: https://tailscale.com/install.sh
+    dest: /tmp/tailscale-install.sh
+    mode: '0755'
+
+- name: Install Tailscale
+  shell: /tmp/tailscale-install.sh
+  args:
+    creates: /usr/bin/tailscale
+
+- name: Start and enable Tailscaled
+  systemd:
+    name: tailscaled
+    state: started
+    enabled: yes
+
+- name: Configure Tailscale (will be done in main playbook with auth key)

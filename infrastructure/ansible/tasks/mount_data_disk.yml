@@ -1,0 +1,34 @@
+---
+- name: Check if data disk is already mounted
+  shell: mount | grep /dev/sdc1
+  register: disk_mounted
+  failed_when: false
+  changed_when: false
+
+- name: Create filesystem on data disk
+  filesystem:
+    fstype: ext4
+    dev: /dev/sdc
+  when: disk_mounted.rc != 0
+
+- name: Create mount point
+  file:
+    path: /opt/tailscale-hub
+    state: directory
+    mode: '0755'
+
+- name: Mount data disk
+  mount:
+    path: /opt/tailscale-hub
+    src: /dev/sdc
+    fstype: ext4
+    state: mounted
+  when: disk_mounted.rc != 0
+
+- name: Add to fstab
+  mount:
+    path: /opt/tailscale-hub
+    src: /dev/sdc
+    fstype: ext4
+    state: present
+  when: disk_mounted.rc != 0
