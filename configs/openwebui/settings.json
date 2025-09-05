@@ -1,0 +1,44 @@
+{
+  "ENABLE_SIGNUP": false,
+  "DEFAULT_USER_ROLE": "user",
+  "ENABLE_LOGIN_FORM": true,
+  "ENABLE_COMMUNITY_SHARING": false,
+  "WEBUI_NAME": "Tailscale Hub LLM",
+  "WEBUI_URL": "http://azure-vm.tailnet:8081",
+  "WEBUI_SECRET_KEY": "",
+  "OAUTH_PROVIDERS": [],
+  "ENABLE_OAUTH_SIGNUP": false,
+  "OAUTH_MERGE_ACCOUNTS_BY_EMAIL": false,
+  "DEFAULT_MODELS": "gpt-4o",
+  "DEFAULT_PROMPT_SUGGESTIONS": [
+    {
+      "title": ["Help me study", "Help me learn"],
+      "content": "Create a comprehensive study plan for learning about [topic]. Include key concepts, resources, and practice exercises."
+    },
+    {
+      "title": ["Summarize", "Explain"],
+      "content": "Summarize the following text and explain the key points in simple terms: [paste your text here]"
+    },
+    {
+      "title": ["Write a python script", "Code"],
+      "content": "Write a Python script that [describe what you want the script to do]. Include comments and error handling."
+    },
+    {
+      "title": ["Brainstorm ideas", "Creative"],
+      "content": "Help me brainstorm creative ideas for [describe your project or challenge]. Provide diverse and innovative suggestions."
+    }
+  ],
+  "ENABLE_MESSAGE_RATING": true,
+  "ENABLE_MODEL_FILTER": true,
+  "MODEL_FILTER_ENABLED": false,
+  "MODEL_FILTER_LIST": [],
+  "UPLOAD_ENABLED": true,
+  "FILE_MAX_SIZE": 25,
+  "AUDIO": {
+    "STT_ENABLED": false,
+    "TTS_ENABLED": false
+  },
+  "IMAGES": {
+    "IMAGE_GENERATION_ENABLED": false
+  }
+}

@@ -7,9 +7,22 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: true
+    jsonData:
+      timeInterval: "15s"
+      httpMethod: "POST"
+      queryTimeout: "60s"
+      exemplarTraceIdDestinations:
+        - name: traceID
+          datasourceUid: tempo
 
   - name: Loki
     type: loki
     access: proxy
     url: http://loki:3100
     editable: true
+    jsonData:
+      derivedFields:
+        - name: "trace_id"
+          matcherRegex: "traceID=(\\w+)"
+          url: "http://tempo:3100/explore?left=%5B%22now-1h%22,%22now%22,%22Tempo%22,%7B%22query%22:%22$${__value.raw}%22%7D%5D"
+      maxLines: 1000

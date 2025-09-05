@@ -17,7 +17,7 @@ dns:
   blocked_response_ttl: 10
   parental_block_host: family-block.dns.adguard.com
   safebrowsing_block_host: standard-block.dns.adguard.com
-  ratelimit: 20
+  ratelimit: 50
   ratelimit_whitelist: []
   refuse_any: true
   upstream_dns:
@@ -41,12 +41,12 @@ dns:
   - 127.0.0.0/8
   - ::1/128
   cache_size: 4194304
-  cache_ttl_min: 0
-  cache_ttl_max: 0
+  cache_ttl_min: 300
+  cache_ttl_max: 86400
   cache_optimistic: false
   bogus_nxdomain: []
   aaaa_disabled: false
-  enable_dnssec: false
+  enable_dnssec: true
   edns_client_subnet:
     custom_ip: ""
     enabled: false
@@ -59,7 +59,7 @@ dns:
   filters_update_interval: 24
   parental_enabled: false
   safesearch_enabled: false
-  safebrowsing_enabled: false
+  safebrowsing_enabled: true
   resolve_clients: true
   use_private_ptr_resolvers: true
   local_ptr_upstreams: []
@@ -102,9 +102,29 @@ filters:
   name: AdAway Default Blocklist
   id: 2
 - enabled: true
-  url: https://www.malwaredomainlist.com/hostslist/hosts.txt
-  name: MalwareDomainList.com Hosts List
+  url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+  name: StevenBlack Unified Hosts
   id: 3
+- enabled: true
+  url: https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
+  name: KADhosts (Fraud/Malware)
+  id: 4
+- enabled: true
+  url: https://urlhaus.abuse.ch/downloads/hostfile/
+  name: URLhaus Malware URLs
+  id: 5
+- enabled: true
+  url: https://someonewhocares.org/hosts/zero/hosts
+  name: Dan Pollock's hosts file
+  id: 6
+- enabled: true
+  url: https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/combined_disguised_trackers_justdomains.txt
+  name: AdGuard CNAME Trackers
+  id: 7
+- enabled: true
+  url: https://raw.githubusercontent.com/hectorm/hmirror/master/data/malware-discoverer/list.txt
+  name: Malware Discoverer
+  id: 8
 whitelist_filters: []
 user_rules: []
 dhcp:

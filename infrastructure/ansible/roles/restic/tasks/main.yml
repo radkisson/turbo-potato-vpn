@@ -1,0 +1,62 @@
+---
+# Ansible role for installing and configuring Restic backup system
+- name: Install Restic
+  apt:
+    name: restic
+    state: present
+
+- name: Create backup directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/backups
+    - /opt/backups/scripts
+    - /opt/backups/logs
+
+- name: Create Restic backup script
+  template:
+    src: backup.sh.j2
+    dest: /opt/backups/scripts/backup.sh
+    mode: '0755'
+
+- name: Create Restic restore script
+  template:
+    src: restore.sh.j2
+    dest: /opt/backups/scripts/restore.sh
+    mode: '0755'
+
+- name: Initialize Restic repository
+  shell: |
+    export RESTIC_REPOSITORY="azure:{{ azure_storage_account }}:backups"
+    export RESTIC_PASSWORD="{{ restic_password }}"
+    export AZURE_ACCOUNT_NAME="{{ azure_storage_account }}"
+    export AZURE_ACCOUNT_KEY="{{ azure_storage_key }}"
+    restic init
+  args:
+    creates: "/opt/backups/.restic-initialized"
+  register: restic_init
+
+- name: Mark repository as initialized
+  file:
+    path: "/opt/backups/.restic-initialized"
+    state: touch
+  when: restic_init.changed
+
+- name: Setup daily backup cron job
+  cron:
+    name: "Daily Restic Backup"
+    minute: "0"
+    hour: "2"
+    job: "/opt/backups/scripts/backup.sh >> /opt/backups/logs/backup.log 2>&1"
+    user: root
+
+- name: Setup weekly cleanup cron job
+  cron:
+    name: "Weekly Restic Cleanup"
+    minute: "30"
+    hour: "3"
+    weekday: "0"
+    job: "/opt/backups/scripts/cleanup.sh >> /opt/backups/logs/cleanup.log 2>&1"
+    user: root

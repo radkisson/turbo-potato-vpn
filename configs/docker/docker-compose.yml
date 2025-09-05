@@ -118,6 +118,7 @@ services:
     volumes:
       - ./loki:/etc/loki
       - loki_data:/loki
+    command: -config.file=/etc/loki/loki-config.yaml
 
   promtail:
     image: grafana/promtail:latest
@@ -128,6 +129,7 @@ services:
       - ./promtail:/etc/promtail
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/promtail-config.yaml
 
 networks:
   net:

@@ -1,0 +1,55 @@
+#!/bin/bash
+# Restic restore script for Tailscale Hub
+
+# Exit on any error
+set -e
+
+# Configuration
+export RESTIC_REPOSITORY="azure:{{ azure_storage_account }}:backups"
+export RESTIC_PASSWORD="{{ restic_password }}"
+export AZURE_ACCOUNT_NAME="{{ azure_storage_account }}"
+export AZURE_ACCOUNT_KEY="{{ azure_storage_key }}"
+
+# Check if snapshot ID is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <snapshot-id> [restore-path]"
+    echo "Available snapshots:"
+    restic snapshots
+    exit 1
+fi
+
+SNAPSHOT_ID="$1"
+RESTORE_PATH="${2:-/opt/restore}"
+
+# Logging
+LOGFILE="/opt/backups/logs/restore-$(date +%Y%m%d-%H%M%S).log"
+exec > >(tee -a "$LOGFILE")
+exec 2>&1
+
+echo "$(date): Starting restore process"
+echo "$(date): Snapshot ID: $SNAPSHOT_ID"
+echo "$(date): Restore path: $RESTORE_PATH"
+
+# Create restore directory
+mkdir -p "$RESTORE_PATH"
+
+# Stop services before restore
+echo "$(date): Stopping services for restore"
+cd {{ project_dir }}
+docker compose stop
+
+# Restore backup
+echo "$(date): Restoring snapshot $SNAPSHOT_ID to $RESTORE_PATH"
+restic restore "$SNAPSHOT_ID" --target "$RESTORE_PATH"
+
+if [ $? -eq 0 ]; then
+    echo "$(date): Restore completed successfully"
+    echo "$(date): Files restored to: $RESTORE_PATH"
+    echo "$(date): Please review the restored files before copying them back to their original locations"
+else
+    echo "$(date): Restore failed with error code $?"
+    exit 1
+fi
+
+echo "$(date): Restore process completed"
+echo "$(date): To complete the restore, manually copy files from $RESTORE_PATH to their original locations"

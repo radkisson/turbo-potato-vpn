@@ -1,0 +1,57 @@
+#!/bin/bash
+# Restic backup script for Tailscale Hub
+
+# Exit on any error
+set -e
+
+# Configuration
+export RESTIC_REPOSITORY="azure:{{ azure_storage_account }}:backups"
+export RESTIC_PASSWORD="{{ restic_password }}"
+export AZURE_ACCOUNT_NAME="{{ azure_storage_account }}"
+export AZURE_ACCOUNT_KEY="{{ azure_storage_key }}"
+
+# Logging
+LOGFILE="/opt/backups/logs/backup-$(date +%Y%m%d).log"
+exec > >(tee -a "$LOGFILE")
+exec 2>&1
+
+echo "$(date): Starting backup process"
+
+# Pre-backup: Stop services temporarily for consistency
+echo "$(date): Stopping services for consistent backup"
+cd {{ project_dir }}
+docker compose stop
+
+# Create backup
+echo "$(date): Creating backup snapshot"
+restic backup \
+    {{ project_dir }} \
+    /etc/tailscale \
+    /var/lib/tailscale \
+    --tag daily \
+    --tag "$(date +%Y-%m-%d)" \
+    --exclude="*.log" \
+    --exclude="*/tmp/*" \
+    --exclude="*/cache/*"
+
+# Restart services
+echo "$(date): Restarting services"
+docker compose up -d
+
+# Check backup status
+if [ $? -eq 0 ]; then
+    echo "$(date): Backup completed successfully"
+else
+    echo "$(date): Backup failed with error code $?"
+    exit 1
+fi
+
+# Cleanup old snapshots (keep last 30 days, 12 weeks, 12 months)
+echo "$(date): Cleaning up old snapshots"
+restic forget \
+    --keep-daily 30 \
+    --keep-weekly 12 \
+    --keep-monthly 12 \
+    --prune
+
+echo "$(date): Backup process completed"

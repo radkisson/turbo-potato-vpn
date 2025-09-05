@@ -13,13 +13,13 @@
 
 - name: Create mount point
   file:
-    path: /opt/tailscale-hub
+    path: "{{ project_dir }}"
     state: directory
     mode: '0755'
 
 - name: Mount data disk
   mount:
-    path: /opt/tailscale-hub
+    path: "{{ project_dir }}"
     src: /dev/sdc
     fstype: ext4
     state: mounted
@@ -27,7 +27,7 @@
 
 - name: Add to fstab
   mount:
-    path: /opt/tailscale-hub
+    path: "{{ project_dir }}"
     src: /dev/sdc
     fstype: ext4
     state: present
